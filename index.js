@@ -4,7 +4,7 @@ const app = express();
 const helmet = require('helmet')
 const fileUpload = require('express-fileupload');
 
-const PORT = process.env.PORT ||  3000 ;
+const PORT = process.env.PORT || 3001 ;
 require('./helpers/mongoConfig.js');
 
 
@@ -12,7 +12,7 @@ require('./helpers/mongoConfig.js');
 app.use(helmet())
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(fileUpload)
 app.get('/', function (req, res) {
   res.send('hello, world!')
 })

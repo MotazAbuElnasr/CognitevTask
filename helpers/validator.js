@@ -2,8 +2,9 @@ const { getCodes } = require("country-list");
 const twilio = require("twilio");
 const isAfter = require("validator/lib/isAfter");
 const isISO8601 = require("validator/lib/isISO8601");
-const isAlpha = require("validator/lib/isAlpha");
 const isEmail = require("validator/lib/isEmail");
+const isAlpha = require("validator/lib/isAlpha").default
+const User = require('../models/User')
 // this is trial twilio credentials that should be in the process.ENV
 // const client = twilio("AC6e7561f1812333eac01de88986634b5b", "bf747f4b54a3fd919ec27d1a67bb178b").lookups.v1;
 
@@ -30,10 +31,20 @@ const check_birthdate_errors = birthdate => {
     return create_error("in_the_future");
   }
 };
-const check_email_errors = email => {
+const check_email_errors = async email => {
   if(!isEmail(email)){
     return create_error("invalid")
   }
+  let exist = false
+ await User.find({email}).countDocuments((err,count)=>{
+    if(count){
+      exist = true
+    }
+  })
+  if (exist){
+    return create_error('taken')
+  }
+  // check email existence
 }
 
 const check_phone_errors = async phone_number => {
@@ -56,7 +67,15 @@ const check_phone_errors = async phone_number => {
   if (phone_number.length > 15) {
     return { ...create_error("too_long")[0], count: "15" };
   }
-
+  let exist = false
+ await User.find({phone_number}).countDocuments((err,count)=>{
+    if(count){
+      exist = true
+    }
+  })
+  if (exist){
+    return create_error('taken')
+  }
   // const valid_phone = await verify(phone_number);
   // if (!valid_phone) {
   //   errors.phone_number = create_error("invalid");
@@ -67,12 +86,8 @@ const check_phone_errors = async phone_number => {
   // not_exist error needs an api to check the fake numbers
 };
 
-/*
- "avatar": [ { "error": "blank" }, { "error": "invalid_content_type" } ], "email": [
-{ "error": "taken" }, { "error": "invalid" } ] } }
-*/
 
-//TODO: taken email, 
+//TODO: taken email, taken phone , file uploads 
 
 const check_errors = async body => {
   const errors = {};
@@ -81,14 +96,14 @@ const check_errors = async body => {
   errors.birthdate = check_birthdate_errors(body.birthdate);
   if (body.email){ 
     // email is not required
-    errors.email = check_email_errors(body.email);
+    errors.email = await check_email_errors(body.email);
   }
 
   // check existence of country code in the country code list
   if (!getCodes().includes(body.country_code)) {
     errors.country_code = create_error("inclusion");
   } else {
-    errors.phone_number = [await check_phone_errors(body.phone_number)];
+    errors.phone_number = await check_phone_errors(body.phone_number);
   }
   if (!["male", "female"].includes(body.gender)) {
     errors.gender = create_error("inclusion");
@@ -96,4 +111,4 @@ const check_errors = async body => {
   return { errors };
 };
 
-module.exports = check_errors;
+module.exports = {check_errors,create_error};

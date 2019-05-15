@@ -1,19 +1,41 @@
 const express = require("express");
 const router = express.Router();
-const check_errors = require("../helpers/validator.js")
+const {check_errors , create_error} = require("../helpers/validator.js")
+const User = require('../models/User')
 
 
 
 router.post("/register", async function(req, res) {
-  body = req.body;
-  const { first_name, last_name, country_code, phone_number, gender, birthdate, email } = body;
-  errors = {};
+  console.log(req.body)
+  console.log(req.files)
+  const body = req.body;
+  let validation_errors = {};
   try {
-    errors = await check_errors(body);
+    const {errors} = await check_errors(body);
+    validation_errors = errors
+    errors_arr = Object.values(errors)
+    // it's valid if every key is not defined
+    is_valid = errors_arr.every(value => value == undefined )
   } catch (error) {
-    console.log(error);
+    res.status(500).send("connection_closed")
+    return
   }
-  res.json(errors);
+
+  if (is_valid){
+    const user = new User(body)
+    user.save((err,data)=>{
+      if (!err) {
+      res.status(201).json(data)
+      }
+      else{
+        res.status(500).send("server_err")
+      }
+    })  
+  }
+  else{
+    // status code would be 200 because the request has been handled
+    res.json(validation_errors);
+  }
 
   // let img;
   // let uploadFile = req.files.file;
