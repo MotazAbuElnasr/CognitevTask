@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const dateFormat = require('dateformat');
 const user_schema = new mongoose.Schema({
   first_name: {
     type: "String", required: true,
@@ -11,7 +11,7 @@ const user_schema = new mongoose.Schema({
     type: "String" , required :true,
   },
   phone_number: {
-    type: "Number", unique: true ,required:true,
+    type: "String", unique: true ,required:true,
   },
   gender: {
     type: "String", enum: ["male", "female"] , required : true,
@@ -22,10 +22,29 @@ const user_schema = new mongoose.Schema({
   email: {
     type: "String",unique: true,
   },
-  avatar: String,
+  avatar: {
+    type: "String", unique: true ,required:true,
+  },
+  password:  { //for task2
+    type: "String",required:true,
+  }, 
+  status: { type: mongoose.Schema.Types.Mixed, default: {} }
+},
+{
+  toObject: { virtuals: true },
+  minimize: false ,
+}
+);
+
+
+
+
+
+
+user_schema.virtual('formated_birthdate').get(function() {
+  const birthdate = new Date(this.birthdate);
+  return dateFormat(birthdate,'yyyy-mm-dd') 
 });
-
-
 
 
 
