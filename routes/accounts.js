@@ -6,9 +6,6 @@ const fileUpload = require("express-fileupload");
 const bcrypt = require("bcryptjs");
 const config = require("../helpers/jwtconfig");
 const jwt = require("jsonwebtoken");
-const limiters = require("../helpers/limiters");
-
-
 
 router.post("/register", fileUpload(), async function(req, res) {
   const body = req.body;
