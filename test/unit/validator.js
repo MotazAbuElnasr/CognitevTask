@@ -1,10 +1,8 @@
 const chai = require('chai');
 const expect = chai.expect;
 const rewire = require('rewire');
-const sinon = require('sinon');
 const fs = require('fs');
 const validator = rewire('../../helpers/validator.js');
-const fileType = require('file-type');
 const create_error = validator.__get__('create_error');
 const check_name_errors = validator.__get__('check_name_errors');
 const check_birthdate_errors = validator.__get__('check_birthdate_errors');
@@ -15,7 +13,7 @@ const check_phone_errors = validator.__get__('check_phone_errors');
 const check_gender_errors = validator.__get__('check_gender_errors');
 
 describe('Validator module', function() {
-  require('../../helpers/mongo_config_test');
+  require('../../helpers/testhelpers/test_config');
   context('Creating errors', function() {
     it('Should return error name desired format [{\'error\':\'error_type\'}]', function() {
       expect(create_error('error_type')).to.deep.equal([{error: 'error_type'}]);
@@ -123,28 +121,35 @@ describe('Validator module', function() {
       expect(check_avatar_errors(undefined)).to.deep.equal([{error: 'blank'}]);
     });
 
-    it('should return invalid content type error if the uploaded file is not an img', async function() {
-      const contents = fs.readFileSync(`${__dirname}/test_media/pdf.pdf`)
-      expect(check_avatar_errors(contents)).to.deep.equal([{error: 'invalid_content_type'}]);
+    it('should return invalid content type error if the uploaded file is not an img ie: PDF', function() {
+      const data = fs.readFileSync(`${__dirname}/test_media/pdf.pdf`)
+      const avatar = {data}
+      expect(check_avatar_errors(avatar)).to.deep.equal([{error: 'invalid_content_type'}]);
+    });
+
+    it('should return invalid content type error if the uploaded file is not an img ie: Docx', function() {
+      const data = fs.readFileSync(`${__dirname}/test_media/docx.docx`)
+      const avatar = {data}
+      expect(check_avatar_errors(avatar)).to.deep.equal([{error: 'invalid_content_type'}]);
     });
     
-    // it("should return undefined if the uploaded file is of type image/png",function () {
-    //   sinon
-    //   .stub().withArgs(fileType, 'mime')
-    //   .returns("image/png");
+    it("should return undefined if the uploaded file is of type image/png",function () {
+      const data = fs.readFileSync(`${__dirname}/test_media/png.png`)
+      const avatar = {data}
 
-    // });
-    // it("should return undefined if the uploaded file is of type ",function () {
-    //   sinon
-    //   .stub().withArgs(fileType, 'mime')
-    //   .returns("image/jpg");
+      expect(check_avatar_errors(avatar)).to.deep.equal(undefined);
+    });
 
-    // });
-    // it("should return undefined if the uploaded file is of type ",function () {
-    //   sinon
-    //   .stub().withArgs(fileType, 'mime')
-    //   .returns("image/jpeg");
+    it("should return undefined if the uploaded file is of type image/jpg",function () {
+      const data = fs.readFileSync(`${__dirname}/test_media/jpg.jpg`)
+      const avatar = {data}
 
-    // });
+      expect(check_avatar_errors(avatar)).to.deep.equal(undefined);
+    });
+    it("should return undefined if the uploaded file is of type image/png",function () {
+      const data = fs.readFileSync(`${__dirname}/test_media/png.png`)
+      const avatar = {data}
+      expect(check_avatar_errors(avatar)).to.deep.equal(undefined);
+    });
   });
 });

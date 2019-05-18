@@ -81,7 +81,7 @@ const check_avatar_errors = (avatar) => {
     return create_error('blank');
   }
   const allowed_types = ['image/png', 'image/jpg', 'image/jpeg'];
-  const file_type = fileType(avatar).mime; 
+  const file_type = fileType(avatar.data).mime; 
   if (!allowed_types.includes(file_type)) {
     return create_error('invalid_content_type');
   }

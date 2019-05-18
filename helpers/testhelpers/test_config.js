@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const User = require("../models/User");
-
+const User = require("../../models/User");
+const app = require('./index')
 const MONGO_URL =
   process.env.MONG_URL || "mongodb+srv://motazabuelnasr:CEnGKjQBV9X5lVM3@motaz-dobv2.mongodb.net/test?retryWrites=true";
 let db;
@@ -27,7 +27,6 @@ const connectDB = () => {
               password: "1234",
               avatar: "avatar_url"
             };
-  
             const user = new User(test_user_data);
             user.save((err, data) => {
               if (!err) {
@@ -54,5 +53,11 @@ before(async () => {
 
 after(done => {
   mongoose.connection.close();
+  app.close(()=>{
+    console.log("server closed")
+    console.log("db connection closed")
+})
   done();
 });
+
+module.exports = app

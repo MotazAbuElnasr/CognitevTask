@@ -11,18 +11,18 @@ router.post('/register', fileUpload(), async function(req, res) {
   const body = req.body;
   const uploaded_file = req.files ? req.files.avatar : null;
   try {
-    const {errors} = await check_errors(body, uploaded_file.data);
+    const {errors} = await check_errors(body, uploaded_file);
     validation_errors = errors;
     const errors_arr = Object.values(errors);
     // it's valid if every key is not defined
     is_valid = errors_arr.every((error) => error == undefined);
   } catch (error) {
+    console.log(error)
     return res.status(500).send();
   }
-
   if (!is_valid) {
     // status code would be 200 because the request has been handled
-    res.json(validation_errors);
+    return res.json(validation_errors);
   }
   // for the sake of task 2 , I'll add password to the user model to be authenticated upon
   body.password = bcrypt.hashSync(body.password, 8);
@@ -30,6 +30,7 @@ router.post('/register', fileUpload(), async function(req, res) {
   const user = new User(body);
   uploaded_file.mv(body.avatar, (err) => {
     if (err) {
+    console.log(error)
       return res.status(500).send('error uploading');
     }
   });
@@ -38,7 +39,7 @@ router.post('/register', fileUpload(), async function(req, res) {
       const {id, first_name, last_name, country_code, phone_number, gender, birthdate} = user_data;
       res.status(201).json({id, first_name, last_name, country_code, phone_number, gender, birthdate});
     } else {
-      return res.status(500).send();
+      return res.status(500).send(console.log(err));
     }
   });
 });
